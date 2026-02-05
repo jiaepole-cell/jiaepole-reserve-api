@@ -3,12 +3,6 @@ export default async function handler(req, res) {
     const NOTION_TOKEN = process.env.NOTION_TOKEN;
     const DB_ID = process.env.NOTION_DB_ID;
 
-    if (!NOTION_TOKEN || !DB_ID) {
-      return res.status(500).json({
-        error: "Missing NOTION_TOKEN or NOTION_DB_ID",
-      });
-    }
-
     const response = await fetch(
       `https://api.notion.com/v1/databases/${DB_ID}/query`,
       {
@@ -21,30 +15,12 @@ export default async function handler(req, res) {
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText);
-    }
-
     const data = await response.json();
 
-    const result = (data.results || []).map((page) => {
-      const props = page.properties || {};
-
-      return {
-        id: page.id,
-        title: props["이름"]?.title?.[0]?.plain_text ?? "",
-        date: props["날짜"]?.date?.start ?? null,
-      };
-    });
-
-    res.status(200).json(result);
+    // 🔥 핵심: 노션 원본 그대로 반환
+    res.status(200).json(data);
 
   } catch (err) {
-    console.error("API ERROR:", err);
-    res.status(500).json({
-      error: "Server error",
-      detail: err.message,
-    });
+    res.status(500).json({ error: err.message });
   }
 }
