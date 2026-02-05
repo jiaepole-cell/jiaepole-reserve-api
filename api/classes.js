@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 export default async function handler(req, res) {
   try {
     const NOTION_TOKEN = process.env.NOTION_TOKEN;
@@ -16,30 +14,35 @@ export default async function handler(req, res) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${NOTION_TOKEN}`,
+          Authorization: `Bearer ${NOTION_TOKEN}`,
           "Notion-Version": "2022-06-28",
           "Content-Type": "application/json",
         },
       }
     );
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText);
+    }
+
     const data = await response.json();
 
-    const result = data.results.map((page) => {
-      const props = page.properties;
+    const result = (data.results || []).map((page) => {
+      const props = page.properties || {};
 
       return {
         id: page.id,
-        title: props?.이름?.title?.[0]?.plain_text ?? "",
-        date: props?.날짜?.date?.start ?? null,
+        title: props["이름"]?.title?.[0]?.plain_text ?? "",
+        date: props["날짜"]?.date?.start ?? null,
       };
     });
 
-    return res.status(200).json(result);
+    res.status(200).json(result);
 
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({
+    console.error("API ERROR:", err);
+    res.status(500).json({
       error: "Server error",
       detail: err.message,
     });
