@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>지애폴 수업 예약</title>
+</head>
+<body>
+  <h1>수업 시간표</h1>
+  <ul id="list"></ul>
+
+  <script>
+    fetch("/api/classes")
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById("list");
+        data.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = `${item.title} / ${item.date}`;
+          list.appendChild(li);
+        });
+      })
+      .catch(err => {
+        document.body.innerHTML += "<p>불러오기 실패</p>";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
