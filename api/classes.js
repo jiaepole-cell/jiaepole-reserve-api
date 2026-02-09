@@ -3,6 +3,14 @@ export default async function handler(req, res) {
     const NOTION_TOKEN = process.env.NOTION_TOKEN;
     const DB_ID = process.env.NOTION_DB_ID;
 
+    if (!NOTION_TOKEN || !DB_ID) {
+      return res.status(500).json({
+        error: "환경변수 누락",
+        NOTION_TOKEN: !!NOTION_TOKEN,
+        NOTION_DB_ID: !!DB_ID,
+      });
+    }
+
     const response = await fetch(
       `https://api.notion.com/v1/databases/${DB_ID}/query`,
       {
@@ -15,12 +23,21 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    if (!response.ok) {
+      const text = await response.text();
+      return res.status(response.status).json({
+        error: "Notion API 오류",
+        detail: text,
+      });
+    }
 
-    // 🔥 핵심: 노션 원본 그대로 반환
+    const data = await response.json();
     res.status(200).json(data);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: "서버 에러",
+      message: err.message,
+    });
   }
 }
