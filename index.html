@@ -1,27 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>지애폴 수업 예약</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>수업 시간표</title>
 </head>
 <body>
   <h1>수업 시간표</h1>
-  <ul id="list"></ul>
+  <pre id="out">불러오는 중...</pre>
 
   <script>
     fetch("/api/classes")
-      .then(res => res.json())
+      .then(r => r.json())
       .then(data => {
-        const list = document.getElementById("list");
-        data.forEach(item => {
-          const li = document.createElement("li");
-          li.textContent = `${item.title} / ${item.date}`;
-          list.appendChild(li);
-        });
+        document.getElementById("out").textContent = JSON.stringify(data, null, 2);
       })
       .catch(err => {
-        document.body.innerHTML += "<p>불러오기 실패</p>";
-        console.error(err);
+        document.getElementById("out").textContent = "불러오기 실패: " + err;
       });
   </script>
 </body>
